@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0});var http=require("http"),Mionendas={};exports.default=Mionendas,module.exports=Mionendas;

@@ -5,7 +5,7 @@ var babel = require('gulp-babel');
 
 gulp.task('js', () => {
   return gulp.src('mionendas.js')
-  .pipe(babel({presets: ['env']}))
+  .pipe(babel({presets: ['@babel/env']}))
   .on('error', function(err) {
     console.error('[Compilation Error]');
     console.error(err.message + '\n');

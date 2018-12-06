@@ -121,10 +121,10 @@ class Tester {
 
 class Suite {
 
-  constructor(method, path, tests) {
+  constructor(method, path, getTests) {
     this.method = method;
     this.path = path;
-    this.tests = tests;
+    this.tests = getTests();
   }
 
 }
@@ -147,8 +147,29 @@ function when(description) {
 }
 
 function match(subject, target) {
-  return (target.find((key) => {
-    return (subject[key] === undefined);
+  return (Object.keys(target).find((key) => {
+    let match_existence = (subject[key] !== undefined);
+    let match_type = false;
+    if (match_existence) {
+      switch (target[key]) {
+        case 'string':
+          match_type = (typeof subject[key] === 'string');
+        break;
+        case 'number':
+          match_type = (typeof subject[key] === 'number');
+        break;
+        case 'boolean':
+          match_type = (typeof subject[key] === 'boolean');
+        break;
+        case 'array':
+          match_type = Array.isArray(subject[key]);
+        break;
+        case 'object':
+          match_type = (typeof subject[key] === 'object' && subject[key] !== null);
+        break;
+      }
+    }
+    return (!match_existence || !match_type);
   }) === undefined);
 }
 

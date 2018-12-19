@@ -21,9 +21,9 @@ class Tester {
       console.log('\x1b[2m' + this.suites[i].tests.length + ' tests\x1b[0m');
       console.log('\n');
       for (let j=0; j<this.suites[i].tests.length; j++) {
-        console.log(this.suites[i].tests[j].description);
+        console.log('\x1b[35m' + this.suites[i].tests[j].description + '\x1b[0m');
         console.log('- - - - - - - - - - - - - - - - - - -')
-        const response = await this.call(this.suites[i].method, this.suites[i].path, this.suites[i].tests[j].body);
+        const response = await this.call(this.suites[i].method, this.suites[i].path, this.suites[i].tests[j].data);
         let returned_value;
         if (response.err) {
           console.log(' ', response.err);
@@ -33,7 +33,13 @@ class Tester {
           console.log(' ', response.result);
           returned_value = response.result;
         }
-        const test_result = this.suites[i].tests[j].checker(returned_value);
+        let test_result;
+        try {
+          test_result = this.suites[i].tests[j].checker(returned_value);
+        }
+        catch (err) {
+          test_result = false;
+        }
         if (test_result === true) {
           this.suites[i].tests[j].passed = true;
           console.log('\x1b[32m  PASSED\x1b[0m');
@@ -79,9 +85,29 @@ class Tester {
     console.log('\n');
   }
 
-  call(method, path, body) {
+  call(method, path, data) {
     return new Promise((resolve, reject) => {
-      console.log('\x1b[2m ', body, '\x1b[0m');
+      data = Object.assign({}, {
+        body: null,
+        params: null,
+        query: null,
+      }, data);
+      if (data.params !== null) {
+        Object.keys(data.params).forEach((key) => {
+          path = path.replace(':' + key, data.params[key])
+        });
+      }
+      if (method === 'get') {
+        if (data.query !== null) {
+          path += '?' + Object.keys(data.query).map((key) => {
+            return (key + '=' + data.query[key]);
+          }).join('&');
+        }
+      }
+      console.log('\x1b[36m ', path, '\x1b[0m');
+      if (method !== 'get') {
+        console.log('\x1b[2m ', data.body, '\x1b[0m');
+      }
       const req = http.request({
         host: this.env.host,
         port: this.env.port,
@@ -89,6 +115,7 @@ class Tester {
         method: method,
         headers: {
           'Content-Type': 'application/json;charset=UTF-8',
+          'Authorization': 'Bearer ' + this.storage.token,
         },
       }, (res) => {
         var responseString = '';
@@ -108,7 +135,12 @@ class Tester {
           }
         });
       });
-      req.write(JSON.stringify(Object.assign({}, body, {token: this.storage.token})));
+      if (method === 'get') {
+        //req.write();
+      }
+      else {
+        req.write(JSON.stringify(data.body));
+      }
       req.end();
     });
   }
@@ -131,12 +163,12 @@ class Suite {
 
 function when(description) {
   return ({
-    with: (body) => {
+    with: (data) => {
       return ({
         check: (checker) => {
           return ({
             description,
-            body,
+            data,
             checker,
             passed: null,
           });

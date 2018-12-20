@@ -39,12 +39,13 @@ class Tester {
             console.log(' ', response.result);
             returned_value = response.result;
           }
-          let test_result;
+          let test_result = null;
+          let test_error = null;
           try {
             test_result = this.suites[i].tests[j].checker(returned_value, k);
           }
           catch (err) {
-            test_result = false;
+            test_error = err;
           }
           if (test_result === true) {
             this.suites[i].tests[j].passed[k] = true;
@@ -56,7 +57,7 @@ class Tester {
           }
           else {
             this.suites[i].tests[j].passed[k] = null;
-            console.log('\x1b[33m  INCONCLUSIVE\n\x1b[0m');
+            console.log('\x1b[33m  INCONCLUSIVE\x1b[0m - ' + (test_error || '') + '\n');
           }
         }
         console.log('');

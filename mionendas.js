@@ -197,22 +197,34 @@ function match(subject, target) {
     let match_existence = (subject[key] !== undefined);
     let match_type = false;
     if (match_existence) {
-      switch (target[key]) {
-        case 'string':
-          match_type = (typeof subject[key] === 'string');
-        break;
-        case 'number':
-          match_type = (typeof subject[key] === 'number');
-        break;
-        case 'boolean':
-          match_type = (typeof subject[key] === 'boolean');
-        break;
-        case 'array':
-          match_type = Array.isArray(subject[key]);
-        break;
-        case 'object':
-          match_type = (typeof subject[key] === 'object' && subject[key] !== null);
-        break;
+      let type_targets = target[key];
+      if (Array.isArray(type_targets) === false) {
+        type_targets = [type_targets];
+      }
+      for (let i=0; i<type_targets.length; i++) {
+        switch (type_targets[i]) {
+          case 'null':
+            match_type = (subject[key] === null);
+          break;
+          case 'string':
+            match_type = (typeof subject[key] === 'string');
+          break;
+          case 'number':
+            match_type = (typeof subject[key] === 'number');
+          break;
+          case 'boolean':
+            match_type = (typeof subject[key] === 'boolean');
+          break;
+          case 'array':
+            match_type = Array.isArray(subject[key]);
+          break;
+          case 'object':
+            match_type = (typeof subject[key] === 'object' && subject[key] !== null);
+          break;
+        }
+        if (match_type === true) {
+          break;
+        }
       }
     }
     return (!match_existence || !match_type);

@@ -22,53 +22,65 @@ class Tester {
       console.log('\n');
       for (let j=0; j<this.suites[i].tests.length; j++) {
         console.log('\x1b[35m' + this.suites[i].tests[j].description + '\x1b[0m');
-        console.log('- - - - - - - - - - - - - - - - - - -')
-        const response = await this.call(this.suites[i].method, this.suites[i].path, this.suites[i].tests[j].data);
-        let returned_value;
-        if (response.err) {
-          console.log(' ', response.err);
-          returned_value = response.err;
+        console.log('- - - - - - - - - - - - - - - - - - -');
+        this.suites[i].tests[j].data = this.suites[i].tests[j].data_getter();
+        if (Array.isArray(this.suites[i].tests[j].data) === false) {
+          this.suites[i].tests[j].data = [this.suites[i].tests[j].data];
         }
-        else {
-          console.log(' ', response.result);
-          returned_value = response.result;
+        this.suites[i].tests[j].passed = [];
+        for (let k=0; k<this.suites[i].tests[j].data.length; k++) {
+          const response = await this.call(this.suites[i].method, this.suites[i].path, this.suites[i].tests[j].data[k]);
+          let returned_value;
+          if (response.err) {
+            console.log(' ', response.err);
+            returned_value = response.err;
+          }
+          else {
+            console.log(' ', response.result);
+            returned_value = response.result;
+          }
+          let test_result;
+          try {
+            test_result = this.suites[i].tests[j].checker(returned_value, k);
+          }
+          catch (err) {
+            test_result = false;
+          }
+          if (test_result === true) {
+            this.suites[i].tests[j].passed[k] = true;
+            console.log('\x1b[32m  PASSED\n\x1b[0m');
+          }
+          else if (test_result === false) {
+            this.suites[i].tests[j].passed[k] = false;
+            console.log('\x1b[31m  FAILED\n\x1b[0m');
+          }
+          else {
+            this.suites[i].tests[j].passed[k] = null;
+            console.log('\x1b[33m  INCONCLUSIVE\n\x1b[0m');
+          }
         }
-        let test_result;
-        try {
-          test_result = this.suites[i].tests[j].checker(returned_value);
-        }
-        catch (err) {
-          test_result = false;
-        }
-        if (test_result === true) {
-          this.suites[i].tests[j].passed = true;
-          console.log('\x1b[32m  PASSED\x1b[0m');
-        }
-        else if (test_result === false) {
-          this.suites[i].tests[j].passed = false;
-          console.log('\x1b[31m  FAILED\x1b[0m');
-        }
-        else {
-          console.log('\x1b[33m  INCONCLUSIVE\x1b[0m');
-        }
-        console.log('\n');
+        console.log('');
       };
-      console.log('\n')
+      console.log('\n\n\n')
     };
 
-    const tests_counts = this.suites.map((suite) => {
-      return (suite.tests.length);
+    const test_counts_per_suite = this.suites.map((suite) => {
+      return this.sum(suite.tests.map((test) => {
+        return (test.data.length);
+      }));
     });
-    const tests_passed_counts = this.suites.map((suite) => {
-      return (suite.tests.filter((test) => {
-        return (test.passed === true);
-      }).length);
+    const passed_tests_count_per_suite = this.suites.map((suite) => {
+      return this.sum(suite.tests.map((test) => {
+        return (test.passed.filter((passed) => {
+          return (passed === true);
+        }).length);
+      }));
     });
-    const total_tests = this.sum(tests_counts);
+    const total_tests = this.sum(test_counts_per_suite);
     const total_suites = this.suites.length;
-    const tests_passed_count = this.sum(tests_passed_counts);
-    const suites_passed_count = this.sum(tests_passed_counts.map((count, i) => {
-      if (count === tests_counts[i]) {
+    const tests_passed_count = this.sum(passed_tests_count_per_suite);
+    const suites_passed_count = this.sum(passed_tests_count_per_suite.map((count, i) => {
+      if (count === test_counts_per_suite[i]) {
         return 1;
       }
       else {
@@ -91,6 +103,7 @@ class Tester {
         body: null,
         params: null,
         query: null,
+        token: '',
       }, data);
       if (data.params !== null) {
         Object.keys(data.params).forEach((key) => {
@@ -115,7 +128,7 @@ class Tester {
         method: method,
         headers: {
           'Content-Type': 'application/json;charset=UTF-8',
-          'Authorization': 'Bearer ' + this.storage.token,
+          'Authorization': 'Bearer ' + data.token,
         },
       }, (res) => {
         var responseString = '';
@@ -163,12 +176,13 @@ class Suite {
 
 function when(description) {
   return ({
-    with: (data) => {
+    with: (data_getter) => {
       return ({
         check: (checker) => {
           return ({
             description,
-            data,
+            data_getter,
+            data: null,
             checker,
             passed: null,
           });

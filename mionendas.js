@@ -18,7 +18,7 @@ class Tester {
 
     for (let i=0; i<this.suites.length; i++) {
       console.log('\x1b[36m' + this.suites[i].method.toUpperCase() + ' ' + this.suites[i].path + '\x1b[0m');
-      console.log('\x1b[2m' + this.suites[i].tests.length + ' tests\x1b[0m');
+      console.log('\x1b[2m' + this.suites[i].tests.length + ' test' + this.plural(this.suites[i].tests.length) + ' \x1b[0m');
       console.log('\n');
       for (let j=0; j<this.suites[i].tests.length; j++) {
         console.log('\x1b[35m' + this.suites[i].tests[j].description + '\x1b[0m');
@@ -92,8 +92,8 @@ class Tester {
     const suites_passed_color = (suites_passed_count === total_suites) ? '\x1b[32m' : '\x1b[31m';
 
     console.log('API tests complete');
-    console.log(suites_passed_color + suites_passed_count + '\x1b[0m out of ' + total_suites + ' suites passed');
-    console.log(tests_passed_color + tests_passed_count + '\x1b[0m out of ' + total_tests + ' tests passed');
+    console.log(suites_passed_color + suites_passed_count + '\x1b[0m out of ' + total_suites + ' suite' + this.plural(total_suites) + ' passed');
+    console.log(tests_passed_color + tests_passed_count + '\x1b[0m out of ' + total_tests + ' test' + this.plural(total_tests) + ' passed');
     console.log('\n');
   }
 
@@ -160,6 +160,10 @@ class Tester {
 
   sum(array) {
     return array.reduce((a,b) => a + b, 0);
+  }
+
+  plural(n) {
+    return (n === 1 ? '' : 's');
   }
 
 }

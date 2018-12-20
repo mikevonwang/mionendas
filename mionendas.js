@@ -198,6 +198,14 @@ function when(description) {
 }
 
 function match(subject, target) {
+  if ((typeof subject !== 'object' || subject === null)) {
+    throw new TypeError('match() expects an object for its first argument. Instead received: ' + String(subject));
+    return null;
+  }
+  if ((typeof target !== 'object' || target === null)) {
+    throw new TypeError('match() expects an object for its second argument. Instead received: ' + String(target));
+    return null;
+  }
   return (Object.keys(target).find((key) => {
     let match_existence = (subject[key] !== undefined);
     let match_type = false;

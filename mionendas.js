@@ -229,6 +229,19 @@ function match(subject, target) {
       if (Array.isArray(type_targets) === false) {
         type_targets = [type_targets];
       }
+      if (type_targets.find((target) => {
+        return (target[target.length - 1] === '?');
+      }) !== undefined) {
+        type_targets = type_targets.map((target) => {
+          if (target[target.length - 1] === '?') {
+            return target.substring(0, target.length - 1);
+          }
+          else {
+            return target;
+          }
+        });
+        type_targets.push('null');
+      }
       for (let i=0; i<type_targets.length; i++) {
         switch (type_targets[i]) {
           case 'null':

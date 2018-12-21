@@ -207,6 +207,11 @@ class MatchError extends Error {
   }
 }
 
+function isDateString(datestring) {
+  const date = new Date(datestring);
+  return (date instanceof Date && !isNaN(date));
+}
+
 function match(subject, target) {
   if ((typeof subject !== 'object' || subject === null)) {
     throw new TypeError('match() expects an object for its first argument. Instead received: ' + String(subject));
@@ -228,6 +233,9 @@ function match(subject, target) {
         switch (type_targets[i]) {
           case 'null':
             match_type = (subject[key] === null);
+          break;
+          case 'datestring':
+            match_type = isDateString(subject[key]);
           break;
           case 'string':
             match_type = (typeof subject[key] === 'string');

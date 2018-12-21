@@ -45,19 +45,23 @@ class Tester {
             test_result = this.suites[i].tests[j].checker(returned_value, k);
           }
           catch (err) {
+            if (err instanceof MatchError) {
+              test_result = false;
+            }
             test_error = err;
           }
+          const test_error_output = (test_error !== null) ? (' - ' + (test_error || '')) : '';
           if (test_result === true) {
             this.suites[i].tests[j].passed[k] = true;
             console.log('\x1b[32m  PASSED\n\x1b[0m');
           }
           else if (test_result === false) {
             this.suites[i].tests[j].passed[k] = false;
-            console.log('\x1b[31m  FAILED\n\x1b[0m');
+            console.log('\x1b[31m  FAILED\x1b[0m' + test_error_output + '\n');
           }
           else {
             this.suites[i].tests[j].passed[k] = null;
-            console.log('\x1b[33m  INCONCLUSIVE\x1b[0m - ' + (test_error || '') + '\n');
+            console.log('\x1b[33m  INCONCLUSIVE\x1b[0m' + test_error_output + '\n');
           }
         }
         console.log('');
@@ -197,6 +201,12 @@ function when(description) {
   });
 }
 
+class MatchError extends Error {
+  constructor(message) {
+    super(message);
+  }
+}
+
 function match(subject, target) {
   if ((typeof subject !== 'object' || subject === null)) {
     throw new TypeError('match() expects an object for its first argument. Instead received: ' + String(subject));
@@ -238,6 +248,9 @@ function match(subject, target) {
         if (match_type === true) {
           break;
         }
+      }
+      if (match_type === false) {
+        throw new MatchError('match() expects ' + key + ' to be type "' + type_targets + '". Instead received: ' + String(subject[key]));
       }
     }
     return (!match_existence || !match_type);

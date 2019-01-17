@@ -110,11 +110,18 @@ class Tester {
         query: null,
         token: '',
       }, data);
+      const payload = JSON.stringify(data.body);
+
       if (data.params !== null) {
         Object.keys(data.params).forEach((key) => {
           path = path.replace(':' + key, data.params[key])
         });
       }
+
+      const headers = {
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Authorization': 'Bearer ' + data.token,
+      };
       if (method === 'get') {
         if (data.query !== null) {
           path += '?' + Object.keys(data.query).map((key) => {
@@ -125,16 +132,15 @@ class Tester {
       console.log('\x1b[36m ', path, '\x1b[0m');
       if (method !== 'get') {
         console.log('\x1b[2m ', data.body, '\x1b[0m');
+        headers['Content-Length'] = Buffer.byteLength(payload);
       }
+
       const req = http.request({
         host: this.env.host,
         port: this.env.port,
         path: this.env.path_root + path,
         method: method,
-        headers: {
-          'Content-Type': 'application/json;charset=UTF-8',
-          'Authorization': 'Bearer ' + data.token,
-        },
+        headers: headers,
       }, (res) => {
         var responseString = '';
         res.on('data', (data) => {
@@ -157,7 +163,7 @@ class Tester {
         //req.write();
       }
       else {
-        req.write(JSON.stringify(data.body));
+        req.write(payload);
       }
       req.end();
     });
@@ -222,9 +228,10 @@ function match(subject, target) {
     return null;
   }
   return (Object.keys(target).find((key) => {
-    let match_existence = (subject[key] !== undefined);
-    let match_type = false;
-    if (match_existence) {
+    let matches_existence = (subject[key] !== undefined);
+    let matches_type = false;
+    let is_type_target_invalid = false;
+    if (matches_existence) {
       let type_targets = target[key];
       if (Array.isArray(type_targets) === false) {
         type_targets = [type_targets];
@@ -245,36 +252,42 @@ function match(subject, target) {
       for (let i=0; i<type_targets.length; i++) {
         switch (type_targets[i]) {
           case 'null':
-            match_type = (subject[key] === null);
+            matches_type = (subject[key] === null);
           break;
           case 'datestring':
-            match_type = isDateString(subject[key]);
+            matches_type = isDateString(subject[key]);
           break;
           case 'string':
-            match_type = (typeof subject[key] === 'string');
+            matches_type = (typeof subject[key] === 'string');
           break;
           case 'number':
-            match_type = (typeof subject[key] === 'number');
+            matches_type = (typeof subject[key] === 'number');
           break;
           case 'boolean':
-            match_type = (typeof subject[key] === 'boolean');
+            matches_type = (typeof subject[key] === 'boolean');
           break;
           case 'array':
-            match_type = Array.isArray(subject[key]);
+            matches_type = Array.isArray(subject[key]);
           break;
           case 'object':
-            match_type = (typeof subject[key] === 'object' && subject[key] !== null);
+            matches_type = (typeof subject[key] === 'object' && subject[key] !== null);
           break;
+          default:
+            is_type_target_invalid = true;
+            matches_type = false;
         }
-        if (match_type === true) {
+        if (matches_type === true || is_type_target_invalid === true) {
           break;
         }
       }
-      if (match_type === false) {
+      if (is_type_target_invalid === true) {
+        throw new MatchError('"' + type_targets + '" is not a valid type target');
+      }
+      else if (matches_type === false) {
         throw new MatchError('match() expects ' + key + ' to be type "' + type_targets + '". Instead received: ' + String(subject[key]));
       }
     }
-    return (!match_existence || !match_type);
+    return (!matches_existence || !matches_type);
   }) === undefined);
 }
 

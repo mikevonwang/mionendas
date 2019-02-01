@@ -316,6 +316,9 @@ function match(subject, target) {
         throw new MatchError('match() expects ' + key + ' to be type "' + type_targets + '". Instead received: ' + String(subject[key]));
       }
     }
+    else {
+      throw new MatchError('"' + key + '" does not exist on the subject');
+    }
     return (!matches_existence || !matches_type);
   }) === undefined);
 }

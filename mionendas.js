@@ -28,6 +28,7 @@ class Tester {
           this.suites[i].tests[j].data = [this.suites[i].tests[j].data];
         }
         this.suites[i].tests[j].passed = [];
+        this.suites[i].tests[j].errors = [];
         for (let k=0; k<this.suites[i].tests[j].data.length; k++) {
           const response = await this.call(this.suites[i].method, this.suites[i].path, this.suites[i].tests[j].data[k]);
           let returned_value;
@@ -50,18 +51,19 @@ class Tester {
             }
             test_error = err;
           }
-          const test_error_output = (test_error !== null) ? (' - ' + (test_error || '')) : '';
           if (test_result === true) {
             this.suites[i].tests[j].passed[k] = true;
             console.log('\x1b[32m  PASSED\n\x1b[0m');
           }
           else if (test_result === false) {
             this.suites[i].tests[j].passed[k] = false;
-            console.log('\x1b[31m  FAILED\x1b[0m' + test_error_output + '\n');
+            this.suites[i].tests[j].errors[k] = test_error;
+            console.log('\x1b[31m  FAILED\x1b[0m' + this.format_error(test_error) + '\n');
           }
           else {
             this.suites[i].tests[j].passed[k] = null;
-            console.log('\x1b[33m  INCONCLUSIVE\x1b[0m' + test_error_output + '\n');
+            this.suites[i].tests[j].errors[k] = test_error;
+            console.log('\x1b[33m  INCONCLUSIVE\x1b[0m' + this.format_error(test_error) + '\n');
           }
         }
         console.log('');
@@ -100,6 +102,29 @@ class Tester {
     console.log(suites_passed_color + suites_passed_count + '\x1b[0m out of ' + total_suites + ' suite' + this.plural(total_suites) + ' passed');
     console.log(tests_passed_color + tests_passed_count + '\x1b[0m out of ' + total_tests + ' test' + this.plural(total_tests) + ' passed');
     console.log('\n');
+
+    if (tests_passed_count < total_tests) {
+      console.log('\nFailed tests (\x1b[31m' + (total_tests - tests_passed_count) + '\x1b[0m total): ');
+      this.suites.forEach((suite, i) => {
+        if (passed_tests_count_per_suite[i] < test_counts_per_suite[i]) {
+          console.log('\n\x1b[36m' + suite.method.toUpperCase() + ' ' + suite.path + '\x1b[0m');
+          suite.tests.forEach((test, j) => {
+            if (test.passed.find(passed => (passed !== true)) !== undefined) {
+              console.log('\x1b[35m  ' + test.description + '\x1b[0m');
+            }
+            test.passed.forEach((passed, k) => {
+              if (passed === false) {
+                console.log('\x1b[31m    FAILED\x1b[0m' + this.format_error(test.errors[k]));
+              }
+              else if (passed === null) {
+                console.log('\x1b[33m    INCONCLUSIVE\x1b[0m' + this.format_error(test.errors[k]));
+              }
+            });
+          });
+        }
+      });
+      console.log('\n');
+    }
   }
 
   call(method, path, data) {
@@ -175,6 +200,10 @@ class Tester {
 
   plural(n) {
     return (n === 1 ? '' : 's');
+  }
+
+  format_error(error) {
+    return ((error !== null) ? (' - ' + (error || '')) : '');
   }
 
 }

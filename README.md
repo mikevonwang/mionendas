@@ -4,7 +4,7 @@ Mïonendas is an API testing tool.
 
 ## Installation
 
-`npm install Mïonendas @babel/runtime --save-dev`
+`npm install mionendas @babel/runtime --save-dev`
 
 ## Usage and Example
 

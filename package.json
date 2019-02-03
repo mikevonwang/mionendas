@@ -1,25 +1,31 @@
 {
   "name": "mionendas",
   "version": "0.1.1",
-  "description": "An API tester",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "An API testing tool",
+  "browser": "index.js",
+  "author": {
+    "name": "Mike Wang",
+    "email": "mikevonwang@gmail.com"
   },
-  "author": "Mike Wang <mikevonwang@gmail.com",
-  "repository": "gitlab:mikevonwang/mionendas",
+  "repository": "github:mikevonwang/mionendas",
   "license": "MIT",
   "dependencies": {
     "babel-core": "^6.26.3"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@babel/runtime": "^7.1.5"
+  },
   "devDependencies": {
     "@babel/core": "^7.1.6",
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.6",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0"
-  }
+  },
+  "keywords": [
+    "test",
+    "testing"
+  ]
 }

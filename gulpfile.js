@@ -3,7 +3,7 @@ var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var babel = require('gulp-babel');
 
-gulp.task('js', () => {
+function task_js() {
   return gulp.src('mionendas.js')
   .pipe(babel({presets: ['@babel/env']}))
   .on('error', function(err) {
@@ -15,12 +15,10 @@ gulp.task('js', () => {
   .pipe(uglify())
   .pipe(rename('index.js'))
   .pipe(gulp.dest('./'))
-});
+};
 
-gulp.task('watch', () => {
-  gulp.watch('mionendas.js', ['js']);
-});
+function task_watch() {
+  gulp.watch('rhaetia.js', gulp.parallel(task_js));
+};
 
-gulp.task('build', ['js']);
-
-gulp.task('default', ['build', 'watch']);
+gulp.task('default', gulp.parallel(task_js, task_watch));

@@ -8,7 +8,7 @@ Mïonendas is an API testing tool.
 
 ## Usage and Example
 
-After installation, there are 6 main steps to implementing Mïonendas:
+After installation, there are 6 main steps to using Mïonendas:
 
 **1.** In your project, create a file called `mionfile.js`.
 

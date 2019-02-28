@@ -18,7 +18,7 @@ function task_js() {
 };
 
 function task_watch() {
-  gulp.watch('rhaetia.js', gulp.parallel(task_js));
+  gulp.watch('mionendas.js', gulp.parallel(task_js));
 };
 
 gulp.task('default', gulp.parallel(task_js, task_watch));

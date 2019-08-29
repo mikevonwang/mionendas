@@ -1,6 +1,6 @@
 {
   "name": "mionendas",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "An API testing tool",
   "browser": "index.js",
   "author": {
